@@ -1,0 +1,16 @@
+FROM balenalib/%%BALENA_MACHINE_NAME%%-debian:buster
+
+RUN apt-get update && apt-get -uy upgrade
+RUN apt-get -y install ca-certificates && update-ca-certificates
+
+FROM scratch
+
+COPY --from=0 /etc/ssl/certs /etc/ssl/certs
+ADD coredns /coredns
+ADD config /config
+
+EXPOSE 54 54/tcp
+EXPOSE 54 54/udp
+EXPOSE 9253 9253/tcp
+EXPOSE 443 443/tcp
+ENTRYPOINT ["/coredns", "-conf", "/config/Corefile", "-dns.port", "54"]
