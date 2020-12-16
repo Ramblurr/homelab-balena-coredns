@@ -1,43 +1,14 @@
-svc.socozy.casa {
-    file /config/zones/db.svc.socozy.casa svc.socozy.casa
-    forward . 192.168.1.1
-    reload 30s
-}
-
-mgmt.socozy.casa {
-    file /config/zones/db.mgmt.socozy.casa mgmt.socozy.casa
-    forward . 192.168.1.1
-    reload 30s
-}
-
-int.socozy.casa {
-    forward . 192.168.1.1
-}
-
-fam.socozy.casa {
-    forward . 192.168.1.1
-}
-
-work.socozy.casa {
-    forward . 192.168.1.1
-}
-
-guest.socozy.casa {
-    forward . 192.168.1.1
-}
+import /data/zones/*
 
 . {
+    bind {$DNS_IP}
     health
     prometheus 0.0.0.0:9253
     errors
     reload 30s
-    log
-    #log . {
-    #    class denial error
-    #}
-    # debug
-    forward . tls://{$DNS_NEXTDNS1} tls://{$DNS_NEXTDNS2} {
-      tls_servername {$DNS_NEXTDNS_NAME}
+    # log
+    forward . tls://{$DNS_UPSTREAM1} tls://{$DNS_UPSTREAM2} {
+      tls_servername {$DNS_UPSTREAM_NAME}
     }
     cache 30
 }

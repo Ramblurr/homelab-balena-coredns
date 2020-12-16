@@ -1,16 +1,30 @@
-FROM balenalib/%%BALENA_MACHINE_NAME%%-debian:buster
+FROM balenalib/%%BALENA_MACHINE_NAME%%-debian:buster as builder
+ARG COREDNS_VERSION=1.8.0
+ARG ARCH=arm
 
-RUN apt-get update && apt-get -uy upgrade
-RUN apt-get -y install ca-certificates && update-ca-certificates
+WORKDIR /tmp
+ADD https://github.com/coredns/coredns/releases/download/v${COREDNS_VERSION}/coredns_${COREDNS_VERSION}_linux_${ARCH}.tgz /tmp/
+RUN tar zxvf coredns_${COREDNS_VERSION}_linux_${ARCH}.tgz
 
-FROM scratch
+FROM builder
 
-COPY --from=0 /etc/ssl/certs /etc/ssl/certs
-ADD coredns /coredns
+COPY --from=builder /tmp/coredns /usr/local/bin/coredns
+RUN groupadd -r coredns && useradd -r -g coredns coredns
+
+RUN set -eux; \
+	apt-get update; \
+	apt-get install -y ca-certificates gosu; \
+    update-ca-certificates; \
+	rm -rf /var/lib/apt/lists/*; \
+	gosu nobody true
+
 ADD config /config
 
-EXPOSE 54 54/tcp
-EXPOSE 54 54/udp
+EXPOSE 53 53/tcp
+EXPOSE 53 53/udp
 EXPOSE 9253 9253/tcp
 EXPOSE 443 443/tcp
-ENTRYPOINT ["/coredns", "-conf", "/config/Corefile", "-dns.port", "54"]
+
+COPY docker-entrypoint.sh /usr/local/bin/
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["/usr/local/bin/coredns", "-conf", "/config/Corefile", "-dns.port", "53"]

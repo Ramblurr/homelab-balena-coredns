@@ -1,10 +1,15 @@
 ---
-version: '2'
+version: '2.1'
+volumes:
+  coredns-data:
 services:
   coredns:
     build: .
-    ports:
-      - "0.0.0.0:53:54"
-      - "0.0.0.0:53:54/udp"
-      - "0.0.0.0:443:443"
-      - "0.0.0.0:9253:9253"
+    dns:
+      - 127.0.0.1
+      - 1.1.1.1
+    network_mode: host
+    sysctls:
+      - net.ipv4.ip_unprivileged_port_start=0
+    volumes:
+      - "coredns-data:/data"
