@@ -13,3 +13,5 @@ services:
       - net.ipv4.ip_unprivileged_port_start=0
     volumes:
       - "coredns-data:/data"
+    labels:
+      io.balena.update.strategy: hand-over
