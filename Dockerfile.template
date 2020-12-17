@@ -13,7 +13,7 @@ RUN groupadd -r coredns && useradd -r -g coredns coredns
 
 RUN set -eux; \
 	apt-get update; \
-	apt-get install -y ca-certificates gosu; \
+	apt-get install -y ca-certificates gosu vim-tiny; \
     update-ca-certificates; \
 	rm -rf /var/lib/apt/lists/*; \
 	gosu nobody true

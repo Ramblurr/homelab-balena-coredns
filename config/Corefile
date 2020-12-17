@@ -1,14 +1,9 @@
-import /data/zones/*
-
+import /data/conf.d/*
 . {
-    bind {$DNS_IP}
-    health
-    prometheus 0.0.0.0:9253
-    errors
-    reload 30s
-    # log
+    import /config/common.conf
+    import /data/root-extra.conf
+    cache 30
     forward . tls://{$DNS_UPSTREAM1} tls://{$DNS_UPSTREAM2} {
       tls_servername {$DNS_UPSTREAM_NAME}
     }
-    cache 30
 }
