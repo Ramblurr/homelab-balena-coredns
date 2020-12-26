@@ -1,14 +1,17 @@
-FROM balenalib/%%BALENA_MACHINE_NAME%%-debian:buster as builder
-ARG COREDNS_VERSION=1.8.0
-ARG ARCH=arm
+FROM balenalib/%%BALENA_MACHINE_NAME%%-debian-golang:buster as builder
 
-WORKDIR /tmp
-ADD https://github.com/coredns/coredns/releases/download/v${COREDNS_VERSION}/coredns_${COREDNS_VERSION}_linux_${ARCH}.tgz /tmp/
-RUN tar zxvf coredns_${COREDNS_VERSION}_linux_${ARCH}.tgz
+ARG COREDNS_VERSION=1.8.0
+
+ENV GO111MODULE=on
+ENV CGO_ENABLED=0
+RUN go mod download github.com/coredns/coredns@v${COREDNS_VERSION}
+WORKDIR $GOPATH/pkg/mod/github.com/coredns/coredns@v${COREDNS_VERSION}
+COPY plugin.cfg plugin.cfg
+RUN go generate coredns.go && go build -mod=mod -o=/usr/local/bin/coredns
 
 FROM builder
 
-COPY --from=builder /tmp/coredns /usr/local/bin/coredns
+COPY --from=builder  /usr/local/bin/coredns /usr/local/bin/coredns
 RUN groupadd -r coredns && useradd -r -g coredns coredns
 
 RUN set -eux; \
