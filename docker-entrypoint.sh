@@ -43,7 +43,7 @@ echo [$(date "+%Y-%m-%d %H:%M:%S")] "Starting coredns with DNS_IP=${DNS_IP}, DNS
 if [ "$(id -u)" = '0' ]; then
     mkdir -p /data/zones
     chown -R coredns:coredns /data
-    exec gosu coredns "$BASH_SOURCE" "$@"
+    exec su-exec coredns "$BASH_SOURCE" "$@"
 fi
 
 exec "$@"

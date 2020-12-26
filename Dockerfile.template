@@ -9,17 +9,12 @@ WORKDIR $GOPATH/pkg/mod/github.com/coredns/coredns@v${COREDNS_VERSION}
 COPY plugin.cfg plugin.cfg
 RUN go generate coredns.go && go build -mod=mod -o=/usr/local/bin/coredns
 
-FROM builder
+FROM balenalib/%%BALENA_MACHINE_NAME%%-alpine:3.12-run
 
 COPY --from=builder  /usr/local/bin/coredns /usr/local/bin/coredns
-RUN groupadd -r coredns && useradd -r -g coredns coredns
+RUN addgroup -S coredns && adduser -S coredns -G coredns
 
-RUN set -eux; \
-	apt-get update; \
-	apt-get install -y ca-certificates gosu vim-tiny; \
-    update-ca-certificates; \
-	rm -rf /var/lib/apt/lists/*; \
-	gosu nobody true
+RUN apk --no-cache add ca-certificates su-exec bash
 
 ADD config /config
 
